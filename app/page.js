@@ -84,13 +84,20 @@ export default function HomePage() {
     ]);
   };
 
+  const handleAddNewline = () => {
+    setSelectedItems((prev) => [
+      ...prev,
+      { kind: 'newline', uid: `newline-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(16).slice(2)}` },
+    ]);
+  };
+
   const handleSortSelection = () => {
     if (totalTiles === 0) return;
     setSelectedItems((prev) => {
       const tilesOnly = prev.filter((item) => item.kind === 'tile').sort((a, b) => compareTiles(a.id, b.id));
       let tileIndex = 0;
       return prev.map((item) => {
-        if (item.kind === 'spacer') return item;
+        if (item.kind !== 'tile') return item;
         const nextTile = tilesOnly[tileIndex];
         tileIndex += 1;
         return nextTile;
@@ -119,6 +126,7 @@ export default function HomePage() {
 
   const selectedTiles = selectedItems.map((item, idx) => {
     if (item.kind === 'spacer') return { kind: 'spacer', key: item.uid, index: idx };
+    if (item.kind === 'newline') return { kind: 'newline', key: item.uid, index: idx };
     return { ...TILE_LOOKUP[item.id], kind: 'tile', key: item.uid, index: idx };
   });
   const totalTiles = selectedItems.filter((item) => item.kind === 'tile').length;
@@ -156,6 +164,7 @@ export default function HomePage() {
         </div>
         <div className="actions" style={{ marginBottom: 12 }}>
           <button className="btn ghost" onClick={handleAddSpacer} aria-label="Add spacer">Add spacer</button>
+          <button className="btn ghost" onClick={handleAddNewline} aria-label="Add new line">New line</button>
         </div>
         <div
           ref={selectionRef}
@@ -165,21 +174,59 @@ export default function HomePage() {
           onDrop={() => handleDrop(selectedTiles.length)}
         >
           {selectedTiles.length === 0 && <p className="notice">Nothing yet—tap tiles below to add them.</p>}
-          {selectedTiles.map((tile) => (
-            <button
-              key={tile.key}
-              className={`tile clickable${tile.kind === 'spacer' ? ' spacer' : ''}`}
-              onClick={() => handleRemoveAt(tile.index)}
-              aria-label={tile.kind === 'spacer' ? 'Remove spacer' : `Remove ${tile.name}`}
-              title={tile.kind === 'spacer' ? 'Click to remove spacer' : 'Click to remove this tile'}
-              draggable
-              onDragStart={() => handleDragStart(tile.index)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => handleDrop(tile.index)}
-            >
-              {tile.kind === 'spacer' ? <span className="spacer-bar"></span> : <img src={tile.path} alt={tile.name} />}
-            </button>
-          ))}
+          {(() => {
+            const rows = [];
+            let currentRow = [];
+            selectedTiles.forEach((item) => {
+              if (item.kind === 'newline') {
+                rows.push({ type: 'tiles', items: currentRow });
+                rows.push({ type: 'newline', item });
+                currentRow = [];
+              } else {
+                currentRow.push(item);
+              }
+            });
+            if (currentRow.length > 0 || rows.length === 0) {
+              rows.push({ type: 'tiles', items: currentRow });
+            }
+
+            return rows.map((row, rowIdx) => {
+              if (row.type === 'newline') {
+                const nl = row.item;
+                return (
+                  <div
+                    key={nl.key}
+                    className="line-break clickable"
+                    onClick={() => handleRemoveAt(nl.index)}
+                    aria-label="Remove line break"
+                    title="Click to remove line break"
+                  >
+                    <span className="line-break-bar"></span>
+                  </div>
+                );
+              }
+
+              return (
+                <div key={`row-${rowIdx}`} className="selected-row">
+                  {row.items.map((tile) => (
+                    <button
+                      key={tile.key}
+                      className={`tile clickable${tile.kind === 'spacer' ? ' spacer' : ''}`}
+                      onClick={() => handleRemoveAt(tile.index)}
+                      aria-label={tile.kind === 'spacer' ? 'Remove spacer' : `Remove ${tile.name}`}
+                      title={tile.kind === 'spacer' ? 'Click to remove spacer' : 'Click to remove this tile'}
+                      draggable
+                      onDragStart={() => handleDragStart(tile.index)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => handleDrop(tile.index)}
+                    >
+                      {tile.kind === 'spacer' ? <span className="spacer-bar"></span> : <img src={tile.path} alt={tile.name} />}
+                    </button>
+                  ))}
+                </div>
+              );
+            });
+          })()}
         </div>
       </section>
       <section>
