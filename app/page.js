@@ -1,0 +1,231 @@
+'use client';
+
+import { useMemo, useRef, useState } from 'react';
+
+const SUIT_ORDER = ['m', 'p', 's', 'z', 'q'];
+
+const buildTiles = () => {
+  const tiles = [];
+
+  const addRange = (suit, maxNumber, maxCopies) => {
+    for (let value = 1; value <= maxNumber; value += 1) {
+      tiles.push({
+        id: `Mpu${value}${suit}`,
+        suit,
+        value,
+        maxCopies,
+        name: `${value}${suit.toUpperCase()}`,
+        path: `/tiles/Mpu${value}${suit}.png`,
+      });
+    }
+  };
+
+  addRange('m', 9, 4);
+  addRange('p', 9, 4);
+  addRange('s', 9, 4);
+  addRange('z', 7, 4);
+  addRange('q', 8, 1);
+
+  return tiles;
+};
+
+const ALL_TILES = buildTiles();
+const TILE_LOOKUP = ALL_TILES.reduce((acc, tile) => ({ ...acc, [tile.id]: tile }), {});
+const TILES_BY_SUIT = SUIT_ORDER.reduce((acc, suit) => {
+  acc[suit] = ALL_TILES.filter((tile) => tile.suit === suit);
+  return acc;
+}, {});
+
+const compareTiles = (aId, bId) => {
+  const a = TILE_LOOKUP[aId];
+  const b = TILE_LOOKUP[bId];
+  if (!a || !b) return 0;
+  const suitDiff = SUIT_ORDER.indexOf(a.suit) - SUIT_ORDER.indexOf(b.suit);
+  if (suitDiff !== 0) return suitDiff;
+  return a.value - b.value;
+};
+
+export default function HomePage() {
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [hideSpacers, setHideSpacers] = useState(false);
+  const selectionRef = useRef(null);
+  const dragIndexRef = useRef(null);
+
+  const counts = useMemo(() => {
+    return selectedItems.reduce((acc, item) => {
+      if (item.kind !== 'tile') return acc;
+      acc[item.id] = (acc[item.id] || 0) + 1;
+      return acc;
+    }, {});
+  }, [selectedItems]);
+
+  const handleAdd = (tileId) => {
+    const tile = TILE_LOOKUP[tileId];
+    const currentCount = counts[tileId] || 0;
+    if (currentCount >= tile.maxCopies) return;
+    setSelectedItems((prev) => [
+      ...prev,
+      {
+        kind: 'tile',
+        id: tileId,
+        uid: `tile-${tileId}-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(16).slice(2)}`,
+      },
+    ]);
+  };
+
+  const handleRemoveAt = (indexToRemove) => {
+    setSelectedItems((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  const handleAddSpacer = () => {
+    setSelectedItems((prev) => [
+      ...prev,
+      { kind: 'spacer', uid: `spacer-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(16).slice(2)}` },
+    ]);
+  };
+
+  const handleSortSelection = () => {
+    if (totalTiles === 0) return;
+    setSelectedItems((prev) => {
+      const tilesOnly = prev.filter((item) => item.kind === 'tile').sort((a, b) => compareTiles(a.id, b.id));
+      let tileIndex = 0;
+      return prev.map((item) => {
+        if (item.kind === 'spacer') return item;
+        const nextTile = tilesOnly[tileIndex];
+        tileIndex += 1;
+        return nextTile;
+      });
+    });
+  };
+
+  const handleDownload = async () => {
+    if (!selectionRef.current || totalTiles === 0) return;
+    setHideSpacers(true);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(selectionRef.current, {
+        backgroundColor: '#0f172a',
+        scale: 2,
+      });
+      const link = document.createElement('a');
+      link.download = 'mahjong-selection.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } finally {
+      setHideSpacers(false);
+    }
+  };
+
+  const selectedTiles = selectedItems.map((item, idx) => {
+    if (item.kind === 'spacer') return { kind: 'spacer', key: item.uid, index: idx };
+    return { ...TILE_LOOKUP[item.id], kind: 'tile', key: item.uid, index: idx };
+  });
+  const totalTiles = selectedItems.filter((item) => item.kind === 'tile').length;
+
+  const handleDragStart = (index) => {
+    dragIndexRef.current = index;
+  };
+
+  const handleDrop = (targetIndex) => {
+    const fromIndex = dragIndexRef.current;
+    dragIndexRef.current = null;
+    if (fromIndex === null || fromIndex === targetIndex) return;
+    setSelectedItems((prev) => {
+      const next = [...prev];
+      const [item] = next.splice(fromIndex, 1);
+      next.splice(targetIndex, 0, item);
+      return next;
+    });
+  };
+
+  return (
+    <main className="main">
+      <header className="header">
+        <div>
+          <h1 className="title">Mahjong Tile Generator</h1>
+        </div>
+      </header>
+
+      <section className="selector">
+        <div className="tile-bar">
+          <h3>
+            Selected tiles <span className="badge">{totalTiles}</span>
+          </h3>
+          <span className="meta">Drag to reorder. Sort uses Mahjong order: m → p → s → honors → flowers</span>
+        </div>
+        <div className="actions" style={{ marginBottom: 12 }}>
+          <button className="btn ghost" onClick={handleAddSpacer} aria-label="Add spacer">Add spacer</button>
+        </div>
+        <div
+          ref={selectionRef}
+          className={`selected-tiles${hideSpacers ? ' hide-spacers' : ''}`}
+          aria-live="polite"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={() => handleDrop(selectedTiles.length)}
+        >
+          {selectedTiles.length === 0 && <p className="notice">Nothing yet—tap tiles below to add them.</p>}
+          {selectedTiles.map((tile) => (
+            <button
+              key={tile.key}
+              className={`tile clickable${tile.kind === 'spacer' ? ' spacer' : ''}`}
+              onClick={() => handleRemoveAt(tile.index)}
+              aria-label={tile.kind === 'spacer' ? 'Remove spacer' : `Remove ${tile.name}`}
+              title={tile.kind === 'spacer' ? 'Click to remove spacer' : 'Click to remove this tile'}
+              draggable
+              onDragStart={() => handleDragStart(tile.index)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => handleDrop(tile.index)}
+            >
+              {tile.kind === 'spacer' ? <span className="spacer-bar"></span> : <img src={tile.path} alt={tile.name} />}
+            </button>
+          ))}
+        </div>
+      </section>
+      <section>
+        <div className="actions">
+          <button className="btn secondary" onClick={handleSortSelection} disabled={totalTiles === 0} aria-label="Sort selected tiles">
+            Sort selection
+          </button>
+          <button
+            className="btn"
+            onClick={handleDownload}
+            disabled={totalTiles === 0}
+            aria-label="Download selected tiles as image"
+          >
+            Download image
+          </button>
+        </div>
+      </section>
+
+      <section style={{ marginTop: 24 }}>
+        <div className="tile-bar" style={{ marginBottom: 12 }}>
+          <h3>Tile catalog</h3>
+          <span className="meta">Tap any tile to add it</span>
+        </div>
+        <div className="catalog">
+          {SUIT_ORDER.map((suit) => (
+            <div key={suit} className="catalog-row">
+              {TILES_BY_SUIT[suit].map((tile) => {
+                const count = counts[tile.id] || 0;
+                const atCap = count >= tile.maxCopies;
+                return (
+                  <button
+                    key={tile.id}
+                    className={`card tile-card${atCap ? ' disabled' : ''}`}
+                    onClick={() => handleAdd(tile.id)}
+                    disabled={atCap}
+                    aria-label={`Add ${tile.name}`}
+                    title={atCap ? 'Reached max copies' : 'Add tile'}
+                  >
+                    <img src={tile.path} alt={tile.name} loading="lazy" />
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
