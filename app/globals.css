@@ -249,9 +249,11 @@ button {
 }
 
 .selected-tiles .tile.spacer {
-  width: 38px;
-  min-width: 38px;
   justify-content: center;
+}
+
+.selected-tiles .tile.spacer img {
+  opacity: 0
 }
 
 .spacer-bar {
