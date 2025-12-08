@@ -47,9 +47,11 @@ const compareTiles = (aId, bId) => {
 
 export default function HomePage() {
   const [selectedItems, setSelectedItems] = useState([]);
+  const [historySize, setHistorySize] = useState(0);
   const [hideSpacers, setHideSpacers] = useState(false);
   const selectionRef = useRef(null);
   const dragIndexRef = useRef(null);
+  const historyRef = useRef([]);
 
   const counts = useMemo(() => {
     return selectedItems.reduce((acc, item) => {
@@ -59,11 +61,21 @@ export default function HomePage() {
     }, {});
   }, [selectedItems]);
 
+  const updateSelection = useCallback((updater) => {
+    setSelectedItems((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      if (next === prev) return prev;
+      historyRef.current.push(prev);
+      setHistorySize(historyRef.current.length);
+      return next;
+    });
+  }, []);
+
   const handleAdd = (tileId) => {
     const tile = TILE_LOOKUP[tileId];
     const currentCount = counts[tileId] || 0;
     if (currentCount >= tile.maxCopies) return;
-    setSelectedItems((prev) => [
+    updateSelection((prev) => [
       ...prev,
       {
         kind: 'tile',
@@ -74,25 +86,27 @@ export default function HomePage() {
   };
 
   const handleRemoveAt = (indexToRemove) => {
-    setSelectedItems((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+    updateSelection((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
   const handleUndo = useCallback(() => {
     setSelectedItems((prev) => {
-      if (prev.length === 0) return prev;
-      return prev.slice(0, -1);
+      if (historyRef.current.length === 0) return prev;
+      const lastState = historyRef.current.pop();
+      setHistorySize(historyRef.current.length);
+      return lastState;
     });
   }, []);
 
   const handleAddSpacer = () => {
-    setSelectedItems((prev) => [
+    updateSelection((prev) => [
       ...prev,
       { kind: 'spacer', uid: `spacer-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(16).slice(2)}` },
     ]);
   };
 
   const handleAddNewline = () => {
-    setSelectedItems((prev) => [
+    updateSelection((prev) => [
       ...prev,
       { kind: 'newline', uid: `newline-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(16).slice(2)}` },
     ]);
@@ -100,7 +114,7 @@ export default function HomePage() {
 
   const handleSortSelection = () => {
     if (totalTiles === 0) return;
-    setSelectedItems((prev) => {
+    updateSelection((prev) => {
       const tilesOnly = prev.filter((item) => item.kind === 'tile').sort((a, b) => compareTiles(a.id, b.id));
       let tileIndex = 0;
       return prev.map((item) => {
@@ -152,7 +166,7 @@ export default function HomePage() {
 
     const handleKeyDown = (event) => {
       if (event.key !== 'Backspace' && event.key !== 'Delete') return;
-      if (selectedItems.length === 0) return;
+      if (historyRef.current.length === 0) return;
       if (isEditableTarget(event.target)) return;
       event.preventDefault();
       handleUndo();
@@ -160,7 +174,7 @@ export default function HomePage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleUndo, selectedItems.length]);
+  }, [handleUndo]);
 
   const handleDragStart = (index) => {
     dragIndexRef.current = index;
@@ -170,7 +184,7 @@ export default function HomePage() {
     const fromIndex = dragIndexRef.current;
     dragIndexRef.current = null;
     if (fromIndex === null || fromIndex === targetIndex) return;
-    setSelectedItems((prev) => {
+    updateSelection((prev) => {
       const next = [...prev];
       const [item] = next.splice(fromIndex, 1);
       next.splice(targetIndex, 0, item);
@@ -199,10 +213,10 @@ export default function HomePage() {
           <button
             className="btn ghost"
             onClick={handleUndo}
-            disabled={selectedItems.length === 0}
-            aria-label="Undo last add"
+            disabled={historySize === 0}
+            aria-label="Undo last action"
           >
-            Undo last
+            Undo
           </button>
         </div>
         <div
