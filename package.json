@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "export": "next build && rm -rf ../kongyim.github.io/mahjong/ && mv out ../kongyim.github.io/mahjong",
     "start": "next start",
     "lint": "next lint"
   },

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const SUIT_ORDER = ['m', 'p', 's', 'z', 'q'];
 
@@ -15,7 +15,7 @@ const buildTiles = () => {
         value,
         maxCopies,
         name: `${value}${suit.toUpperCase()}`,
-        path: `/tiles/Mpu${value}${suit}.png`,
+        path: `./tiles/Mpu${value}${suit}.png`,
       });
     }
   };
@@ -77,6 +77,13 @@ export default function HomePage() {
     setSelectedItems((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
+  const handleUndo = useCallback(() => {
+    setSelectedItems((prev) => {
+      if (prev.length === 0) return prev;
+      return prev.slice(0, -1);
+    });
+  }, []);
+
   const handleAddSpacer = () => {
     setSelectedItems((prev) => [
       ...prev,
@@ -131,6 +138,30 @@ export default function HomePage() {
   });
   const totalTiles = selectedItems.filter((item) => item.kind === 'tile').length;
 
+  useEffect(() => {
+    const isEditableTarget = (target) => {
+      if (!(target instanceof HTMLElement)) return false;
+      const tagName = target.tagName;
+      return (
+        target.isContentEditable ||
+        tagName === 'INPUT' ||
+        tagName === 'TEXTAREA' ||
+        tagName === 'SELECT'
+      );
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key !== 'Backspace' && event.key !== 'Delete') return;
+      if (selectedItems.length === 0) return;
+      if (isEditableTarget(event.target)) return;
+      event.preventDefault();
+      handleUndo();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleUndo, selectedItems.length]);
+
   const handleDragStart = (index) => {
     dragIndexRef.current = index;
   };
@@ -165,6 +196,14 @@ export default function HomePage() {
         <div className="actions" style={{ marginBottom: 12 }}>
           <button className="btn ghost" onClick={handleAddSpacer} aria-label="Add spacer">Add spacer</button>
           <button className="btn ghost" onClick={handleAddNewline} aria-label="Add new line">New line</button>
+          <button
+            className="btn ghost"
+            onClick={handleUndo}
+            disabled={selectedItems.length === 0}
+            aria-label="Undo last add"
+          >
+            Undo last
+          </button>
         </div>
         <div
           ref={selectionRef}
@@ -220,7 +259,7 @@ export default function HomePage() {
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={() => handleDrop(tile.index)}
                     >
-                      {tile.kind === 'spacer' ? <span className="spacer-bar"><img src="/tiles/Mpu00.png" /></span> : <img src={tile.path} alt={tile.name} />}
+                      {tile.kind === 'spacer' ? <span className="spacer-bar"><img src="./tiles/Mpu00.png" /></span> : <img src={tile.path} alt={tile.name} />}
                     </button>
                   ))}
                 </div>

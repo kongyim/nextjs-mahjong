@@ -208,7 +208,7 @@ button {
 .selected-row {
   display: flex;
   flex-wrap: nowrap;
-  gap: 0;
+  gap: 2px;
 }
 
 .selected-row::-webkit-scrollbar {
@@ -342,13 +342,13 @@ button {
 .catalog {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 2px;
 }
 
 .catalog-row {
   display: grid;
   grid-template-columns: repeat(9, minmax(0, 1fr));
-  /* gap: 8px; */
+  gap: 2px;
 }
 
 @media (max-width: 720px) {
