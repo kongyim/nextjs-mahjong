@@ -1,5 +1,5 @@
-import './globals.css';
 import Script from 'next/script';
+import './globals.scss';
 
 export const metadata = {
   title: 'Mahjong Tile Generator',
