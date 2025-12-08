@@ -290,7 +290,6 @@ button {
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 180px;
   padding: 8px 10px;
   color: #e2e8f0;
   background: repeating-linear-gradient(
