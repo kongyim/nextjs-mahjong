@@ -101,21 +101,29 @@ export default function HomePage() {
   const handleAddSpacer = () => {
     updateSelection((prev) => [
       ...prev,
-      { kind: 'spacer', uid: `spacer-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(16).slice(2)}` },
+      {
+        kind: 'spacer',
+        uid: `spacer-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(16).slice(2)}`,
+      },
     ]);
   };
 
   const handleAddNewline = () => {
     updateSelection((prev) => [
       ...prev,
-      { kind: 'newline', uid: `newline-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(16).slice(2)}` },
+      {
+        kind: 'newline',
+        uid: `newline-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(16).slice(2)}`,
+      },
     ]);
   };
 
   const handleSortSelection = () => {
     if (totalTiles === 0) return;
     updateSelection((prev) => {
-      const tilesOnly = prev.filter((item) => item.kind === 'tile').sort((a, b) => compareTiles(a.id, b.id));
+      const tilesOnly = prev
+        .filter((item) => item.kind === 'tile')
+        .sort((a, b) => compareTiles(a.id, b.id));
       let tileIndex = 0;
       return prev.map((item) => {
         if (item.kind !== 'tile') return item;
@@ -205,11 +213,17 @@ export default function HomePage() {
           <h3>
             Selected tiles <span className="badge">{totalTiles}</span>
           </h3>
-          <span className="meta">Drag to reorder. Sort uses Mahjong order: p → s → m → honors → flowers</span>
+          <span className="meta">
+            Drag to reorder. Sort uses Mahjong order: p → s → m → honors → flowers
+          </span>
         </div>
         <div className="actions" style={{ marginBottom: 12 }}>
-          <button className="btn ghost" onClick={handleAddSpacer} aria-label="Add spacer">Add spacer</button>
-          <button className="btn ghost" onClick={handleAddNewline} aria-label="Add new line">New line</button>
+          <button className="btn ghost" onClick={handleAddSpacer} aria-label="Add spacer">
+            Add spacer
+          </button>
+          <button className="btn ghost" onClick={handleAddNewline} aria-label="Add new line">
+            New line
+          </button>
           <button
             className="btn ghost"
             onClick={handleUndo}
@@ -226,7 +240,9 @@ export default function HomePage() {
           onDragOver={(e) => e.preventDefault()}
           onDrop={() => handleDrop(selectedTiles.length)}
         >
-          {selectedTiles.length === 0 && <p className="notice">Nothing yet—tap tiles below to add them.</p>}
+          {selectedTiles.length === 0 && (
+            <p className="notice">Nothing yet—tap tiles below to add them.</p>
+          )}
           {(() => {
             const rows = [];
             let currentRow = [];
@@ -267,13 +283,23 @@ export default function HomePage() {
                       className={`tile clickable${tile.kind === 'spacer' ? ' spacer' : ''}`}
                       onClick={() => handleRemoveAt(tile.index)}
                       aria-label={tile.kind === 'spacer' ? 'Remove spacer' : `Remove ${tile.name}`}
-                      title={tile.kind === 'spacer' ? 'Click to remove spacer' : 'Click to remove this tile'}
+                      title={
+                        tile.kind === 'spacer'
+                          ? 'Click to remove spacer'
+                          : 'Click to remove this tile'
+                      }
                       draggable
                       onDragStart={() => handleDragStart(tile.index)}
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={() => handleDrop(tile.index)}
                     >
-                      {tile.kind === 'spacer' ? <span className="spacer-bar"><img src="./tiles/Mpu00.svg" /></span> : <img src={tile.path} alt={tile.name} />}
+                      {tile.kind === 'spacer' ? (
+                        <span className="spacer-bar">
+                          <img src="./tiles/Mpu00.svg" />
+                        </span>
+                      ) : (
+                        <img src={tile.path} alt={tile.name} />
+                      )}
                     </button>
                   ))}
                 </div>
@@ -284,7 +310,12 @@ export default function HomePage() {
       </section>
       <section>
         <div className="actions">
-          <button className="btn secondary" onClick={handleSortSelection} disabled={totalTiles === 0} aria-label="Sort selected tiles">
+          <button
+            className="btn secondary"
+            onClick={handleSortSelection}
+            disabled={totalTiles === 0}
+            aria-label="Sort selected tiles"
+          >
             Sort selection
           </button>
           <button

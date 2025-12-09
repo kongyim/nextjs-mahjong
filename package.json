@@ -7,7 +7,8 @@
     "build": "next build",
     "export": "next build && rm -rf ../kongyim.github.io/mahjong/ && mv out ../kongyim.github.io/mahjong",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,css,scss,md,json}\""
   },
   "dependencies": {
     "html2canvas": "^1.4.1",
@@ -16,6 +17,7 @@
     "react-dom": "18.2.0"
   },
   "devDependencies": {
+    "prettier": "^3.7.4",
     "sass": "^1.94.2"
   }
 }
