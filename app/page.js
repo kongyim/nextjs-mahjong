@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-const SUIT_ORDER = ['m', 'p', 's', 'z', 'q'];
+const SUIT_ORDER = ['p', 's', 'm', 'z', 'q'];
 
 const buildTiles = () => {
   const tiles = [];
@@ -20,9 +20,9 @@ const buildTiles = () => {
     }
   };
 
-  addRange('m', 9, 4);
   addRange('p', 9, 4);
   addRange('s', 9, 4);
+  addRange('m', 9, 4);
   addRange('z', 7, 4);
   addRange('q', 8, 1);
 
@@ -205,7 +205,7 @@ export default function HomePage() {
           <h3>
             Selected tiles <span className="badge">{totalTiles}</span>
           </h3>
-          <span className="meta">Drag to reorder. Sort uses Mahjong order: m → p → s → honors → flowers</span>
+          <span className="meta">Drag to reorder. Sort uses Mahjong order: p → s → m → honors → flowers</span>
         </div>
         <div className="actions" style={{ marginBottom: 12 }}>
           <button className="btn ghost" onClick={handleAddSpacer} aria-label="Add spacer">Add spacer</button>
