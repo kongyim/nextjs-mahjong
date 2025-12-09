@@ -118,6 +118,11 @@ export default function HomePage() {
     ]);
   };
 
+  const handleResetSelection = () => {
+    if (selectedItems.length === 0) return;
+    updateSelection(() => []);
+  };
+
   const handleSortSelection = () => {
     if (totalTiles === 0) return;
     updateSelection((prev) => {
@@ -141,7 +146,7 @@ export default function HomePage() {
     try {
       const html2canvas = (await import('html2canvas')).default;
       const canvas = await html2canvas(selectionRef.current, {
-        backgroundColor: '#0f172a',
+        backgroundColor: null,
         scale: 2,
       });
       const link = document.createElement('a');
@@ -241,6 +246,14 @@ export default function HomePage() {
           </button>
           <button className="btn ghost" onClick={handleAddNewline} aria-label="Add new line">
             New line
+          </button>
+          <button
+            className="btn ghost"
+            onClick={handleResetSelection}
+            disabled={selectedTiles.length === 0}
+            aria-label="Clear selection"
+          >
+            Reset
           </button>
           <button
             className="btn ghost"
