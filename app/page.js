@@ -184,8 +184,26 @@ export default function HomePage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleUndo]);
 
-  const handleDragStart = (index) => {
+  const handleDragStart = (event, index) => {
     dragIndexRef.current = index;
+    const imgEl = event.currentTarget?.querySelector('img');
+    if (imgEl && event.dataTransfer) {
+      const clone = imgEl.cloneNode(true);
+      Object.assign(clone.style, {
+        position: 'absolute',
+        top: '-9999px',
+        left: '-9999px',
+        background: 'white',
+        borderRadius: '10% / 7%',
+        padding: '6px',
+        boxShadow: '0 6px 16px rgba(0, 0, 0, 0.25)',
+        width: `${imgEl.clientWidth}px`,
+        height: `${imgEl.clientHeight}px`,
+      });
+      document.body.appendChild(clone);
+      event.dataTransfer.setDragImage(clone, imgEl.clientWidth / 2, imgEl.clientHeight / 2);
+      requestAnimationFrame(() => clone.remove());
+    }
   };
 
   const handleDrop = (targetIndex) => {
@@ -289,7 +307,7 @@ export default function HomePage() {
                           : 'Click to remove this tile'
                       }
                       draggable
-                      onDragStart={() => handleDragStart(tile.index)}
+                      onDragStart={(e) => handleDragStart(e, tile.index)}
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={() => handleDrop(tile.index)}
                     >
