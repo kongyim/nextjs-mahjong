@@ -380,7 +380,7 @@ export default function HomePage() {
                     aria-label={`Add ${tile.name}`}
                     title={atCap ? 'Reached max copies' : 'Add tile'}
                   >
-                    <img src={tile.path} alt={tile.name} loading="lazy" />
+                    <img src={tile.path} alt={tile.name} loading="lazy" draggable={false} />
                   </button>
                 );
               })}
