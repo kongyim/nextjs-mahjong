@@ -15,7 +15,7 @@ const buildTiles = () => {
         value,
         maxCopies,
         name: `${value}${suit.toUpperCase()}`,
-        path: `./tiles/Mpu${value}${suit}.png`,
+        path: `./tiles/Mpu${value}${suit}.svg`,
       });
     }
   };
@@ -273,7 +273,7 @@ export default function HomePage() {
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={() => handleDrop(tile.index)}
                     >
-                      {tile.kind === 'spacer' ? <span className="spacer-bar"><img src="./tiles/Mpu00.png" /></span> : <img src={tile.path} alt={tile.name} />}
+                      {tile.kind === 'spacer' ? <span className="spacer-bar"><img src="./tiles/Mpu00.svg" /></span> : <img src={tile.path} alt={tile.name} />}
                     </button>
                   ))}
                 </div>

@@ -1,12 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap');
 
 :root {
-  --bg: #0f172a;
-  --panel: #111827;
+  --bg: #0b1224;
+  --bg-2: #0f172a;
+  --panel: rgba(15, 23, 42, 0.9);
+  --panel-strong: rgba(10, 16, 32, 0.9);
   --accent: #38bdf8;
   --accent-2: #a855f7;
-  --muted: #94a3b8;
+  --muted: #9ca3af;
   --border: rgba(255, 255, 255, 0.08);
+  --radius: 14px;
+  --glow: 0 22px 60px rgba(56, 189, 248, 0.2);
   color-scheme: dark;
 }
 
@@ -18,11 +22,27 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-  background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08), transparent 25%),
-    radial-gradient(circle at 80% 0%, rgba(168, 85, 247, 0.08), transparent 25%),
+  background:
+    radial-gradient(circle at 18% 18%, rgba(56, 189, 248, 0.12), transparent 22%),
+    radial-gradient(circle at 78% 0%, rgba(168, 85, 247, 0.12), transparent 25%),
+    linear-gradient(135deg, rgba(56, 189, 248, 0.04), rgba(168, 85, 247, 0.05) 40%, transparent),
+    radial-gradient(circle at 50% 120%, rgba(56, 189, 248, 0.12), transparent 30%),
     var(--bg);
   color: #e2e8f0;
   min-height: 100vh;
+  background-attachment: fixed;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+  opacity: 0.35;
+  mix-blend-mode: screen;
 }
 
 a {
@@ -37,7 +57,8 @@ button {
 .main {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 32px 20px 64px;
+  padding: 40px 20px 80px;
+  position: relative;
 }
 
 .header {
@@ -46,12 +67,12 @@ button {
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .title {
-  font-size: clamp(28px, 5vw, 36px);
-  font-weight: 600;
+  font-size: clamp(30px, 5vw, 38px);
+  font-weight: 700;
   letter-spacing: -0.02em;
   margin: 0;
 }
@@ -69,22 +90,26 @@ button {
 }
 
 .btn {
-  border: 1px solid var(--border);
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(56, 189, 248, 0.2));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(56, 189, 248, 0.28));
   color: #e2e8f0;
   padding: 10px 16px;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
-  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease, border-color 140ms ease;
+  box-shadow: var(--glow);
 }
 
 .btn.secondary {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(168, 85, 247, 0.18));
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(94, 234, 212, 0.16));
+  box-shadow: 0 16px 40px rgba(168, 85, 247, 0.25);
 }
 
 .btn.ghost {
   background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
 }
 
 .btn:disabled {
@@ -94,33 +119,40 @@ button {
 
 .btn:not(:disabled):hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35), var(--glow);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.btn:focus-visible {
+  outline: 2px solid rgba(56, 189, 248, 0.55);
+  outline-offset: 3px;
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 
 .card {
-  background: var(--panel);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent), var(--panel);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius);
   padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.02);
   cursor: default;
   transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+  backdrop-filter: blur(12px);
 }
 
 .card img {
   width: 100%;
   object-fit: contain;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
   padding: 8px;
 }
 
@@ -140,18 +172,20 @@ button {
   border: 1px solid var(--border);
   padding: 0;
   gap: 0;
-  background: transparent;
-  box-shadow: none;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(56, 189, 248, 0.05));
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
 }
 
 .tile-card img {
   padding: 0;
   background: none;
+  background-color: white;
+  border-radius: 10% / 7%;
 }
 
 .tile-card:not(:disabled):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32), var(--glow);
 }
 
 .tile-card:focus-visible {
@@ -173,7 +207,7 @@ button {
 
 .count {
   background: rgba(255, 255, 255, 0.08);
-  padding: 6px 10px;
+  padding: 7px 12px;
   border-radius: 8px;
   font-weight: 600;
   min-width: 32px;
@@ -188,11 +222,12 @@ button {
 }
 
 .selector {
-  margin-top: 28px;
-  padding: 16px;
-  border-radius: 16px;
-  background: rgba(17, 24, 39, 0.85);
-  border: 1px dashed var(--border);
+  margin-top: 32px;
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.03), transparent), var(--panel-strong);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
 }
 
 .selector h3 {
@@ -231,6 +266,14 @@ button {
   justify-content: center;
   gap: 0;
   cursor: default;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  max-height: calc(100vw * 0.1);
+  aspect-ratio: 1183/1680;
+  background: transparent;
+}
+.selected-tiles .tile img {
+  border-radius: 10% / 7%;
+  background-color: white;
 }
 
 .selected-tiles .tile.clickable {
@@ -239,8 +282,8 @@ button {
 }
 
 .selected-tiles .tile.clickable:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28);
 }
 
 .selected-tiles .tile.clickable:focus-visible {
@@ -253,7 +296,7 @@ button {
 }
 
 .selected-tiles .tile.spacer img {
-  opacity: 0
+  opacity: 0;
 }
 
 .spacer-bar {
@@ -300,7 +343,6 @@ button {
       rgba(56, 189, 248, 0.12) 20px
     ),
     rgba(15, 23, 42, 0.75);
-  border: 1px dashed rgba(56, 189, 248, 0.65);
   border: 1px dashed rgba(148, 163, 184, 0.6);
   border-radius: 8px;
   font-size: 12px;
@@ -348,6 +390,21 @@ button {
   display: grid;
   grid-template-columns: repeat(9, minmax(0, 1fr));
   gap: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.05);
 }
 
 @media (max-width: 720px) {
